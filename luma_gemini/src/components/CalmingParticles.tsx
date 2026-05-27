@@ -1,17 +1,12 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 export default function CalmingParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const mouseRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMouse({ x: e.clientX, y: e.clientY });
+      mouseRef.current = { x: e.clientX, y: e.clientY };
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -90,6 +85,8 @@ export default function CalmingParticles() {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
+      const mouse = mouseRef.current;
+
       // Draw particle layers
       particles.forEach((p) => {
         p.x += p.speedX;
@@ -118,8 +115,8 @@ export default function CalmingParticles() {
 
         if (dist < 400) {
           const force = (400 - dist) / 400;
-          offsetX = -dx * force * 0.04;
-          offsetY = -dy * force * 0.04;
+          offsetX = -dx * force * 0.01;
+          offsetY = -dy * force * 0.01;
         }
 
         // Draw soft orbital radial glow
@@ -167,7 +164,7 @@ export default function CalmingParticles() {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
     };
-  }, [mouse]);
+  }, []);
 
   return (
     <canvas
