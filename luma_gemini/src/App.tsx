@@ -44,6 +44,7 @@ const JARGON_FLOW: JargonTransition[] = [
 ];
 
 export default function App() {
+  const [isLightMode, setIsLightMode] = useState<boolean>(false);
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
   const [customJargonRevealed, setCustomJargonRevealed] = useState<{ [key: string]: boolean }>({});
   
@@ -54,6 +55,15 @@ export default function App() {
 
   const demoSectionRef = useRef<HTMLDivElement>(null);
   const breatheSectionRef = useRef<HTMLDivElement>(null);
+
+  // Sync light theme mode class with body
+  useEffect(() => {
+    if (isLightMode) {
+      document.body.classList.add("theme-light");
+    } else {
+      document.body.classList.remove("theme-light");
+    }
+  }, [isLightMode]);
 
   const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
@@ -90,7 +100,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen text-gray-200 selection:bg-luma-glow/30 selection:text-white overflow-hidden pb-1">
+    <div className={`relative min-h-screen ${isLightMode ? "text-slate-800" : "text-gray-200"} selection:bg-luma-glow/30 selection:text-white overflow-hidden pb-1`}>
       {/* Immersive interactive particle fog field with cursor tracking */}
       <CalmingParticles />
 
@@ -98,6 +108,8 @@ export default function App() {
       <Header
         onDemoScroll={() => scrollToRef(demoSectionRef)}
         onBreatheScroll={() => scrollToRef(breatheSectionRef)}
+        isLightMode={isLightMode}
+        setIsLightMode={setIsLightMode}
       />
 
       {/* HERO SECTION - Cinematic interactive landing */}
@@ -352,7 +364,7 @@ export default function App() {
 
           {/* Beautiful interactive breathing module */}
           <div className="lg:col-span-6">
-            <AudioWave />
+            <AudioWave isLightMode={isLightMode} />
           </div>
 
         </div>
@@ -727,7 +739,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <Footer />
+      <Footer isLightMode={isLightMode} />
     </div>
   );
 }

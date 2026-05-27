@@ -33,18 +33,21 @@ luma_gemini/
 ## ⚡ Main Components & Interactive Features
 
 ### 1. `App.tsx` (Dashboard Controller)
-Coordinates the overall page sections, navigation, and special user interactive states:
-*   **Kinetic Typography Stage**: Cycles through emotional words ("confused", "overwhelmed") and smooth transitions into calming states ("clarity", "empowered") to visually demonstrate Luma's core value proposition.
-*   **Dialogue Rehearsal Simulator**: An interactive dialogue engine enabling patients to practice speaking assertively and clearly to physicians using virtual clinical responses. Practicing conversations out loud helps ground cognitive threat loops before entering a clinic.
+Coordinates the overall page sections, navigation, and core interactive states:
+*   **Dual-Theme Synchronization (`isLightMode`)**: Manages the application's visual mode state. A `useEffect` syncs this state to the document body's `.theme-light` class, enabling smooth, fluid background and text color transitions across all child components.
+*   **Kinetic Typography Stage**: Cycles through emotional words ("confused", "overwhelmed", "anxious", "scared") and smooth transitions into calming states ("clarity", "confidence", "empowered") to visually demonstrate Luma's value.
+*   **Dialogue Rehearsal Simulator**: An interactive dialogue engine enabling patients to rehearse assertive responses to common physician statements (e.g. cholesterol statin pathways, hairline fractures, or positive strep swabs) to ground cognitive threat loops before a clinical visit.
+*   **Community Sanctuary Diaries**: An asymmetric bento grid displaying comforting diary excerpts, herbal tea recipe routines (chamomile & rosemary steeping), and screens power-down schedules.
+*   **Cognitive Assistance Bento**:
+    *   *3 Things to Remember Today*: Extracts and isolates key actionable medical instructions to prevent memory overwhelm.
+    *   *Support Memos & Playback*: Mock recorder for doctor consultations to ease post-visit stress.
+    *   *Encrypted Health Repository*: Local client-side storage simulator preserving total data privacy.
 
 ### 2. `AisLiveDemo.tsx` (AI Transformation Engine)
 The main workspace containing inputs and output structures for medical translation:
 *   **Presets Matrix**: Double-clicking X-Ray Fracture, Throat Swab, or Lipid profiles immediately pre-fills the input field.
-*   **Drag & Drop Scanner**: Accept local text/PDF/image files, parsing them into clinical text templates (supporting `.pdf`, `.png`, `.jpg`, `.txt`).
-*   **Adaptive Psychological States**: Users toggle between three visual UI modes to filter output density:
-    *   `Panic Mode`: Short, simple phrases with low text density.
-    *   `Curious Learner`: Deep-dive science descriptions explaining the body's natural defense systems.
-    *   `Burnout Mode`: Absolute essentials, isolating only a single key focus point.
+*   **Drag & Drop Scanner**: Accepts local files (PDF, PNG, JPG, or TXT), parsing them into clinical text templates (supports scanning simulation).
+*   **Adaptive Psychological States**: Users toggle between three visual UI modes (`Panic Mode`, `Curious Learner`, and `Burnout Mode`) to filter response layout, density, and detail.
 *   **Transformation Stage Workflow**:
     1.  *Stage 1 (Clinical Jargon)*: Text is shown blurred, representing the overwhelming stress of looking at raw diagnostics.
     2.  *Stage 2 (Autonomic Tone Stabilization)*: Replaces jargon with box-breathing cues to lower patient blood pressure.
@@ -54,6 +57,10 @@ The main workspace containing inputs and output structures for medical translati
 ### 3. `AudioWave.tsx` (Nervous System Regulation)
 Provides a visual breathing guide:
 *   Concentric circular paths scale up and down dynamically using smooth bezier intervals, prompting box breathing (Inhale, Hold, Exhale).
+*   **Breathing Tempo Selectors**:
+    *   `Box Loop`: Balanced 4s cycle for general calming.
+    *   `Deep Slumber`: Slower 5s cycle for sleep preparation.
+    *   `Rapid Reset`: Speedier 3s cycle for immediate panic regulation.
 *   Assists in down-regulating cardiovascular adrenaline spikes prior to parsing medical details.
 
 ### 4. `CalmingParticles.tsx` (Ambient Environment)
