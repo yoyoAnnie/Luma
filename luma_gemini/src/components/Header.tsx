@@ -5,6 +5,7 @@
 
 import React from "react";
 import { Sparkles, Heart, Sun, Moon, User, LogOut } from "lucide-react";
+import logoImg from "../logo.png";
 
 interface HeaderProps {
   onDemoScroll: () => void;
@@ -48,12 +49,12 @@ export default function Header({
           className="flex items-center gap-3 cursor-pointer select-none group"
           onClick={onLogoClick}
         >
-          <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-luma-glow to-luma-lavender flex items-center justify-center p-[1px] shadow-sm transition-transform duration-300 group-hover:scale-105">
-            <div className={`w-full h-full rounded-full flex items-center justify-center ${
-              isLightMode ? "bg-slate-50" : "bg-midnight-deep"
-            }`}>
-              <Sparkles className="w-4.5 h-4.5 text-indigo-600 dark:text-luma-glow animate-pulse" />
-            </div>
+          <div className="relative w-9 h-9 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+            <img
+              src={logoImg}
+              alt="LUMA Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h1 className={`font-serif text-lg font-semibold tracking-wide ${

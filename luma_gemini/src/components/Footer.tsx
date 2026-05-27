@@ -5,6 +5,7 @@
 
 import React from "react";
 import { Sparkles, Heart } from "lucide-react";
+import logoImg from "../logo.png";
 
 interface FooterProps {
   isLightMode: boolean;
@@ -26,8 +27,14 @@ export default function Footer({ isLightMode }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 items-start mb-16">
           {/* Luma Brand Info */}
           <div className="md:col-span-2 space-y-6">
-            <div className="flex items-center gap-2">
-              <Sparkles className={`w-5 h-5 ${isLightMode ? "text-indigo-600" : "text-luma-glow"}`} />
+            <div className="flex items-center gap-3">
+              <div className="relative w-8 h-8 overflow-hidden">
+                <img
+                  src={logoImg}
+                  alt="LUMA Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
               <span className={`font-serif text-xl tracking-wider font-semibold ${
                 isLightMode ? "text-slate-900" : "text-white"
               }`}>
