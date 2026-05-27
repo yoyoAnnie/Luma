@@ -16,8 +16,11 @@ const MOCK_TEXT_STREP = "CLINICAL STATUS SUMMARY: Diagnostic swab positive for S
 
 const MOCK_TEXT_LIPID = "LAB PROFILE: Fasting lipid panel reveals severe, out-of-bounds hypercholesterolemia. Elevated Atherogenic risk index calculated at 5.9. Serum of Low-density lipoprotein (LDL) cholesterol flagged extreme elevation at 192 mg/dL. Intima-media thickening suspected. Recommending aggressive HMG-CoA reductase inhibitor pathway.";
 
+const MOCK_TEXT_GLUCOSE = "CLINICAL PATIENT REPORT: ARUP LABORATORIES. Hemoglobin A1c measured at 5.4% (Reference Interval <= 5.6%). Estimated Average Glucose calculated at 108 mg/dL. Interpretive findings suggest standard glycemic control; no indications of hyperglycemia or diabetic symptoms at present.";
+
 export default function AisLiveDemo() {
   const [inputText, setInputText] = useState<string>("");
+  const [uploadedFile, setUploadedFile] = useState<{ data: string; mimeType: string } | null>(null);
   const [selectedMode, setSelectedMode] = useState<UiMode>("panic");
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [fileScanned, setFileScanned] = useState<boolean>(false);
@@ -34,7 +37,7 @@ export default function AisLiveDemo() {
   // Trigger real transform endpoint
   const handleTransform = async (textToUse: string) => {
     const finalQuery = textToUse || inputText;
-    if (!finalQuery.trim()) {
+    if (!finalQuery.trim() && !uploadedFile) {
       setError("Please input clinical text or drop a file first.");
       return;
     }
@@ -53,7 +56,11 @@ export default function AisLiveDemo() {
       const response = await fetch("/api/transform", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: finalQuery, mode: selectedMode }),
+        body: JSON.stringify({
+          text: finalQuery,
+          fileData: uploadedFile,
+          mode: selectedMode
+        }),
       });
 
       if (!response.ok) {
@@ -96,29 +103,48 @@ export default function AisLiveDemo() {
     setIsDragOver(false);
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      simulateFileUpload(files[0].name);
+      simulateFileUpload(files[0]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      simulateFileUpload(files[0].name);
+      simulateFileUpload(files[0]);
     }
   };
 
-  const simulateFileUpload = (fileName: string) => {
+  const simulateFileUpload = (file: File) => {
     setFileScanned(true);
-    setScanStatus(`Scanning ${fileName}...`);
+    setScanStatus(`Scanning ${file.name}...`);
     
-    const targetText = fileName.toLowerCase().includes("blood") || fileName.toLowerCase().includes("lipid")
+    // Read the file as Base64 to support actual multimodal API interpretability on the server
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultString = reader.result as string;
+      const commaIndex = resultString.indexOf(",");
+      const base64Data = commaIndex !== -1 ? resultString.substring(commaIndex + 1) : resultString;
+      setUploadedFile({
+        data: base64Data,
+        mimeType: file.type
+      });
+    };
+    reader.readAsDataURL(file);
+
+    const fileName = file.name.toLowerCase();
+    
+    // Map files intelligently to presets for local simulated experience
+    // Evaluate more specific cardio/lipid checks first, then fall back to report/patient checks for glucose/A1c
+    const targetText = fileName.includes("blood") || fileName.includes("lipid") || fileName.includes("cholesterol") || fileName.includes("ayumetrix") || fileName.includes("cardio") || fileName.includes("health")
       ? MOCK_TEXT_LIPID
-      : fileName.toLowerCase().includes("bone") || fileName.toLowerCase().includes("fracture") || fileName.toLowerCase().includes("x")
+      : fileName.includes("hba1c") || fileName.includes("glucose") || fileName.includes("arup") || fileName.includes("glycemic") || fileName.includes("patient") || fileName.includes("report") || fileName.includes("final") || fileName.includes("hemoglobin")
+      ? MOCK_TEXT_GLUCOSE
+      : fileName.includes("bone") || fileName.includes("fracture") || (fileName.includes("x-ray") || fileName.includes("xray"))
       ? MOCK_TEXT_FRACTURE
       : MOCK_TEXT_STREP;
 
     setTimeout(() => {
-      setScanStatus(`${fileName} parsed successfully.`);
+      setScanStatus(`${file.name} parsed successfully.`);
       setInputText(targetText);
       setCurrentStep(0);
       setResult(null);
@@ -130,6 +156,7 @@ export default function AisLiveDemo() {
     setCurrentStep(0);
     setResult(null);
     setInputText("");
+    setUploadedFile(null);
     setFileScanned(false);
     setScanStatus("");
   };

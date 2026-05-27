@@ -35,10 +35,10 @@ function getAiClient() {
 
 // Transformation API route
 app.post("/api/transform", async (req, res) => {
-  const { text, mode } = req.body;
+  const { text, fileData, mode } = req.body;
 
-  if (!text) {
-    return res.status(400).json({ error: "Medical text or diagnostic data is required." });
+  if (!text && !fileData) {
+    return res.status(400).json({ error: "Medical text, diagnostic data, or file is required." });
   }
 
   const selectedMode = mode || "panic"; // panic | learner | burnout
@@ -96,12 +96,31 @@ app.post("/api/transform", async (req, res) => {
     
     if (!ai) {
       // Return beautiful smart mock response when API key is missing to maintain perfect interactive experience
-      return res.json(getFallbackResponse(text, selectedMode));
+      return res.json(getFallbackResponse(text || "", selectedMode));
+    }
+
+    const promptText = `
+      Analyze the following scary doctor's note or medical report:
+      ---
+      ${text || "See attached document image."}
+      ---
+      
+      Provide your analysis conforming strictly to the requested JSON layout.
+    `;
+
+    const parts: any[] = [{ text: promptText }];
+    if (fileData && fileData.data && fileData.mimeType) {
+      parts.push({
+        inlineData: {
+          data: fileData.data,
+          mimeType: fileData.mimeType
+        }
+      });
     }
 
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
-      contents: promptText,
+      contents: parts,
       config: {
         systemInstruction: systemInstructions,
         responseMimeType: "application/json",
@@ -176,7 +195,7 @@ app.post("/api/transform", async (req, res) => {
   } catch (error: any) {
     console.error("Gemini transformation error:", error);
     // If rate limited or error occurs, fall back to safe simulated responses so user experience remains flawless
-    res.json(getFallbackResponse(text, selectedMode));
+    res.json(getFallbackResponse(text || "", selectedMode));
   }
 });
 
@@ -201,6 +220,10 @@ function getFallbackResponse(text: string, mode: string) {
     disease = "blood chemistry report";
     scaryTerm = "Hyperlipidemia or Elevated biomarkers";
     simplified = "elevated cholesterol layers, which can be elegantly navigated through gentle, delicious, life-giving foods";
+  } else if (contentUpper.includes("GLUCOSE") || contentUpper.includes("A1C") || contentUpper.includes("DIABETES") || contentUpper.includes("GLYCEMIC") || contentUpper.includes("HEMOGLOBIN")) {
+    disease = "glycemic / A1c glucose report";
+    scaryTerm = "Borderline hyper-glycemic index";
+    simplified = "your average blood sugar levels, showing that your energy storage systems are fully functional and in balance";
   } else if (contentUpper.includes("PHARYNGITIS") || contentUpper.includes("TONSIL") || contentUpper.includes("THROAT") || contentUpper.includes("STREP")) {
     disease = "throat swabs / diagnostic letters";
     scaryTerm = "Acute Pharyngitis with Erythema";
