@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 // Initialize Gemini client (server-side only)
 const apiKey = process.env.GEMINI_API_KEY;
@@ -96,7 +96,7 @@ app.post("/api/transform", async (req, res) => {
     
     if (!ai) {
       // Return beautiful smart mock response when API key is missing to maintain perfect interactive experience
-      return res.json(getFallbackResponse(text || "", selectedMode));
+      return res.json(getFallbackResponse(text || "", fileData?.name || "", selectedMode));
     }
 
     const promptText = `
@@ -195,14 +195,14 @@ app.post("/api/transform", async (req, res) => {
   } catch (error: any) {
     console.error("Gemini transformation error:", error);
     // If rate limited or error occurs, fall back to safe simulated responses so user experience remains flawless
-    res.json(getFallbackResponse(text || "", selectedMode));
+    res.json(getFallbackResponse(text || "", fileData?.name || "", selectedMode));
   }
 });
 
 // A robust local parser that generates incredibly smart, custom, contextual and elegant fallback responses
 // so that even if the API Key isn't fully configured yet, the prototype feels elite and fully immersive.
-function getFallbackResponse(text: string, mode: string) {
-  const contentUpper = text.toUpperCase();
+function getFallbackResponse(text: string, fileName: string, mode: string) {
+  const contentUpper = ((text || "") + " " + (fileName || "")).toUpperCase();
   
   let disease = "your current reading";
   let scaryTerm = "Infiltration / Edema";

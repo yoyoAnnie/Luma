@@ -20,7 +20,8 @@ const MOCK_TEXT_GLUCOSE = "CLINICAL PATIENT REPORT: ARUP LABORATORIES. Hemoglobi
 
 export default function AisLiveDemo() {
   const [inputText, setInputText] = useState<string>("");
-  const [uploadedFile, setUploadedFile] = useState<{ data: string; mimeType: string } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{ data: string; mimeType: string; name: string } | null>(null);
+  const [genericToggle, setGenericToggle] = useState<number>(0);
   const [selectedMode, setSelectedMode] = useState<UiMode>("panic");
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [fileScanned, setFileScanned] = useState<boolean>(false);
@@ -126,22 +127,38 @@ export default function AisLiveDemo() {
       const base64Data = commaIndex !== -1 ? resultString.substring(commaIndex + 1) : resultString;
       setUploadedFile({
         data: base64Data,
-        mimeType: file.type
+        mimeType: file.type,
+        name: file.name
       });
     };
     reader.readAsDataURL(file);
 
     const fileName = file.name.toLowerCase();
-    
-    // Map files intelligently to presets for local simulated experience
-    // Evaluate more specific cardio/lipid checks first, then fall back to report/patient checks for glucose/A1c
-    const targetText = fileName.includes("blood") || fileName.includes("lipid") || fileName.includes("cholesterol") || fileName.includes("ayumetrix") || fileName.includes("cardio") || fileName.includes("health")
-      ? MOCK_TEXT_LIPID
-      : fileName.includes("hba1c") || fileName.includes("glucose") || fileName.includes("arup") || fileName.includes("glycemic") || fileName.includes("patient") || fileName.includes("report") || fileName.includes("final") || fileName.includes("hemoglobin")
-      ? MOCK_TEXT_GLUCOSE
-      : fileName.includes("bone") || fileName.includes("fracture") || (fileName.includes("x-ray") || fileName.includes("xray"))
-      ? MOCK_TEXT_FRACTURE
-      : MOCK_TEXT_STREP;
+    const isGeneric = fileName.includes("image") || fileName.includes("screenshot") || fileName.includes("unnamed") || fileName.length <= 12;
+
+    let targetText = MOCK_TEXT_STREP;
+    if (isGeneric) {
+      if (genericToggle === 0) {
+        targetText = MOCK_TEXT_GLUCOSE;
+        setGenericToggle(1);
+      } else if (genericToggle === 1) {
+        targetText = MOCK_TEXT_LIPID;
+        setGenericToggle(2);
+      } else if (genericToggle === 2) {
+        targetText = MOCK_TEXT_FRACTURE;
+        setGenericToggle(0);
+      }
+    } else {
+      // Map files intelligently to presets for local simulated experience
+      // Evaluate more specific cardio/lipid checks first, then fall back to report/patient checks for glucose/A1c
+      targetText = fileName.includes("blood") || fileName.includes("lipid") || fileName.includes("cholesterol") || fileName.includes("ayumetrix") || fileName.includes("cardio") || fileName.includes("health")
+        ? MOCK_TEXT_LIPID
+        : fileName.includes("hba1c") || fileName.includes("glucose") || fileName.includes("arup") || fileName.includes("glycemic") || fileName.includes("patient") || fileName.includes("report") || fileName.includes("final") || fileName.includes("hemoglobin")
+        ? MOCK_TEXT_GLUCOSE
+        : fileName.includes("bone") || fileName.includes("fracture") || (fileName.includes("x-ray") || fileName.includes("xray"))
+        ? MOCK_TEXT_FRACTURE
+        : MOCK_TEXT_STREP;
+    }
 
     setTimeout(() => {
       setScanStatus(`${file.name} parsed successfully.`);
@@ -550,7 +567,7 @@ export default function AisLiveDemo() {
               <button
                 id="btn_transform_trigger"
                 onClick={() => handleTransform("")}
-                disabled={isLoading || !inputText.trim()}
+                disabled={isLoading || (!inputText.trim() && !uploadedFile)}
                 className="flex-1 py-4.5 px-6 rounded-2xl bg-gradient-to-r from-luma-glow via-luma-teal to-luma-lavender text-midnight font-mono text-xs uppercase tracking-widest font-semibold hover:opacity-90 active:scale-98 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-40"
               >
                 {isLoading ? (
@@ -566,7 +583,7 @@ export default function AisLiveDemo() {
                 )}
               </button>
               
-              {inputText && (
+              {(inputText || uploadedFile) && (
                 <button
                   id="btn_simulation_reset"
                   onClick={handleReset}
