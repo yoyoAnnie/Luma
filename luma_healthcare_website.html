@@ -821,6 +821,197 @@
     footer { flex-direction: column; text-align: center; }
     .footer-links { flex-wrap: wrap; justify-content: center; }
   }
+
+  /* ─── SIMPLIFIER MODAL ─── */
+  .modal-card {
+    background: var(--indigo);
+    border: 0.5px solid rgba(180, 183, 224, 0.15);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+    width: 90%;
+    max-width: 720px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .modal-close {
+    position: absolute; top: 1.2rem; right: 1.5rem;
+    background: transparent; border: none;
+    color: rgba(240,237,230,0.4); font-size: 2rem;
+    cursor: pointer; line-height: 1; transition: color 0.3s;
+  }
+  .modal-close:hover { color: var(--cyan2); }
+  .modal-h2 {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    color: var(--ivory);
+    margin-bottom: 0.4rem;
+  }
+  .modal-p {
+    font-size: 0.88rem;
+    color: rgba(240,237,230,0.65);
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+  }
+  .drop-zone {
+    border: 1.5px dashed rgba(180, 183, 224, 0.22);
+    border-radius: 16px;
+    padding: 2.2rem 1.5rem;
+    text-align: center;
+    background: rgba(180, 183, 224, 0.02);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .drop-zone:hover, .drop-zone.drop-zone--active {
+    border-color: var(--cyan);
+    background: rgba(111,214,208,0.04);
+    box-shadow: 0 0 30px rgba(111,214,208,0.12);
+  }
+  .drop-zone-icon { font-size: 2.4rem; }
+  .drop-zone-text { font-size: 0.88rem; color: var(--ivory); }
+  .drop-zone-sub { font-size: 0.72rem; color: rgba(240,237,230,0.4); }
+  .paste-textarea {
+    width: 100%; height: 110px;
+    background: rgba(10, 14, 26, 0.45);
+    border: 0.5px solid rgba(180, 183, 224, 0.15);
+    border-radius: 12px;
+    padding: 0.9rem;
+    color: var(--ivory);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    resize: none;
+    transition: all 0.3s;
+    line-height: 1.6;
+  }
+  .paste-textarea:focus {
+    border-color: var(--cyan);
+    outline: none;
+    box-shadow: 0 0 15px rgba(111,214,208,0.08);
+  }
+  .modal-btn {
+    padding: 0.75rem 1.8rem;
+    border-radius: 100px;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+  .modal-btn-primary {
+    background: linear-gradient(135deg, rgba(111,214,208,0.15), rgba(139,143,200,0.1));
+    border: 0.5px solid rgba(111,214,208,0.45);
+    color: var(--cyan2);
+  }
+  .modal-btn-primary:hover {
+    background: rgba(111,214,208,0.22);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(111,214,208,0.15);
+  }
+  .modal-btn-secondary {
+    background: transparent;
+    border: 0.5px solid rgba(240,237,230,0.18);
+    color: rgba(240,237,230,0.6);
+  }
+  .modal-btn-secondary:hover {
+    border-color: rgba(240,237,230,0.35);
+    color: var(--ivory);
+    background: rgba(240,237,230,0.03);
+  }
+  .loading-container {
+    text-align: center;
+    padding: 2.5rem 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .loading-pulse {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--cyan);
+    opacity: 0.15;
+    animation: loading-breath 2.2s infinite ease-in-out;
+  }
+  @keyframes loading-breath {
+    0%, 100% { transform: scale(0.65); opacity: 0.1; }
+    50% { transform: scale(1.08); opacity: 0.32; }
+  }
+  .loading-message {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    color: var(--ivory);
+  }
+  .loading-subtext {
+    font-size: 0.85rem;
+    color: rgba(240,237,230,0.5);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+  .result-container {
+    display: none;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .stream-content {
+    background: rgba(10, 14, 26, 0.4);
+    border: 0.5px solid rgba(180, 183, 224, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-height: 380px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(240,237,230,0.85);
+  }
+  .stream-h2 {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    color: var(--cyan2);
+    margin-top: 1.6rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 0.5px solid rgba(111,214,208,0.12);
+    padding-bottom: 0.4rem;
+  }
+  .stream-h2:first-of-type { margin-top: 0; }
+  .stream-h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--lavender2);
+    margin-top: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+  .stream-ul {
+    margin-bottom: 1rem;
+    padding-left: 1.2rem;
+  }
+  .stream-li {
+    margin-bottom: 0.5rem;
+    list-style-type: square;
+    color: var(--ivory);
+  }
+  .stream-content p {
+    margin-bottom: 1rem;
+  }
+  .stream-content strong {
+    color: var(--cyan);
+    font-weight: 500;
+  }
+  .result-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
 </style>
 </head>
 <body>
@@ -853,7 +1044,7 @@
     <h1 class="hero-h1">Healthcare is <em>hard to understand</em> when you're scared.</h1>
     <p class="hero-sub">Luma transforms medical language into emotional clarity, guided understanding, and personalized next steps — so you never face a diagnosis alone.</p>
     <div class="hero-buttons">
-      <button class="btn-primary">Upload diagnosis</button>
+      <button id="hero-upload-btn" class="btn-primary">Upload diagnosis</button>
       <button class="btn-ghost">Experience demo →</button>
     </div>
   </div>
@@ -1169,6 +1360,57 @@
   <div style="font-size:0.75rem;color:rgba(240,237,230,0.18)">© 2025 Luma Health, Inc.</div>
 </footer>
 
+<!-- SIMPLIFIER MODAL -->
+<div id="simplifier-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(10,14,26,0.85); backdrop-filter:blur(16px); align-items:center; justify-content:center; opacity:0; transition:opacity 0.4s ease;">
+  <div class="modal-card" style="transform:translateY(30px); transition:transform 0.4s ease;">
+    <button id="modal-close-btn" class="modal-close">&times;</button>
+    
+    <div id="upload-container">
+      <h2 class="modal-h2">Translate Medical Jargon</h2>
+      <p class="modal-p">Upload a medical letter, lab results, or doctor's note (PDF, PNG, JPG, or WebP) or paste the clinical text below to simplify it into plain, compassionate English.</p>
+      
+      <div id="drop-zone" class="drop-zone">
+        <span class="drop-zone-icon">📄</span>
+        <span id="drop-zone-text-el" class="drop-zone-text">Drag and drop your medical file here, or <strong style="color:var(--cyan); text-decoration:underline;">browse files</strong></span>
+        <span class="drop-zone-sub">Supports PDF, JPEG, PNG, WebP up to 20MB</span>
+        <span id="selected-file-name" style="display:none; color:var(--cyan); font-weight:500; font-size:0.85rem;"></span>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf,image/*" style="display:none" />
+      
+      <div style="margin-top:1.2rem; display:flex; flex-direction:column; gap:0.5rem;">
+        <label for="paste-text" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(180,183,224,0.6);">Or paste your medical letter text</label>
+        <textarea id="paste-text" class="paste-textarea" placeholder="Paste medical notes, results, or emails here..."></textarea>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem;">
+        <button id="modal-cancel-btn" class="modal-btn modal-btn-secondary">Cancel</button>
+        <button id="modal-submit-btn" class="modal-btn modal-btn-primary">Simplify</button>
+      </div>
+    </div>
+    
+    <div id="loading-container" class="loading-container">
+      <div class="loading-pulse"></div>
+      <h3 id="loading-title" class="loading-message">Analyzing your records...</h3>
+      <p id="loading-sub" class="loading-subtext">Translating dense medical jargon into plain English. Please take a deep breath.</p>
+      <button id="modal-abort-btn" class="modal-btn modal-btn-secondary" style="margin-top:1rem;">Cancel</button>
+    </div>
+    
+    <div id="result-container" class="result-container">
+      <h2 class="modal-h2" style="color:var(--cyan2); display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.4rem;">✨</span> Luma Simplified Report
+      </h2>
+      <p class="modal-p">We have simplified your letter below. Remember that understanding your health takes time, and you're in control.</p>
+      
+      <div id="stream-content" class="stream-content"></div>
+      
+      <div class="result-actions">
+        <button id="result-print-btn" class="modal-btn modal-btn-secondary">Print Report</button>
+        <button id="result-done-btn" class="modal-btn modal-btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // Particle system
 (function() {
@@ -1259,6 +1501,307 @@ setInterval(() => {
   currentStep = currentStep >= 4 ? 1 : currentStep + 1;
   showStep(currentStep);
 }, 3200);
+
+// Luma Simplifier Modal Logic
+(function() {
+  const modal = document.getElementById('simplifier-modal');
+  const uploadBtn = document.getElementById('hero-upload-btn');
+  const closeBtn = document.getElementById('modal-close-btn');
+  const cancelBtn = document.getElementById('modal-cancel-btn');
+  const submitBtn = document.getElementById('modal-submit-btn');
+  const abortBtn = document.getElementById('modal-abort-btn');
+  const printBtn = document.getElementById('result-print-btn');
+  const doneBtn = document.getElementById('result-done-btn');
+  
+  const uploadContainer = document.getElementById('upload-container');
+  const loadingContainer = document.getElementById('loading-container');
+  const resultContainer = document.getElementById('result-container');
+  
+  const dropZone = document.getElementById('drop-zone');
+  const dropZoneText = document.getElementById('drop-zone-text-el');
+  const fileInput = document.getElementById('file-input');
+  const selectedFileName = document.getElementById('selected-file-name');
+  const pasteText = document.getElementById('paste-text');
+  const streamContent = document.getElementById('stream-content');
+  
+  let selectedFile = null;
+  let activeAbortController = null;
+  let streamedText = "";
+  
+  // Show / Close Modal
+  function openModal() {
+    modal.style.display = 'flex';
+    // Reflow trigger for opacity transition
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      modal.querySelector('.modal-card').style.transform = 'translateY(0)';
+    }, 10);
+    resetForm();
+  }
+  
+  function closeModal() {
+    if (activeAbortController) {
+      activeAbortController.abort();
+    }
+    modal.style.opacity = '0';
+    modal.querySelector('.modal-card').style.transform = 'translateY(30px)';
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 400);
+  }
+  
+  function resetForm() {
+    selectedFile = null;
+    selectedFileName.style.display = 'none';
+    selectedFileName.textContent = '';
+    dropZoneText.style.display = 'block';
+    pasteText.value = '';
+    streamContent.textContent = '';
+    uploadContainer.style.display = 'block';
+    loadingContainer.style.display = 'none';
+    resultContainer.style.display = 'none';
+    activeAbortController = null;
+  }
+  
+  if (uploadBtn) uploadBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', resetForm);
+  if (abortBtn) abortBtn.addEventListener('click', () => {
+    if (activeAbortController) activeAbortController.abort();
+    resetForm();
+  });
+  if (doneBtn) doneBtn.addEventListener('click', closeModal);
+  
+  // Also wire any nav-cta or nav-btn that might want to upload
+  document.querySelectorAll('.nav-cta, .nav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+  
+  // Drag and Drop File Handlers
+  dropZone.addEventListener('click', () => fileInput.click());
+  
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFile(e.target.files[0]);
+    }
+  });
+  
+  function handleFile(file) {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Luma currently supports PDF documents and image files (PNG, JPG, WebP) only.');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      alert('To ensure fast processing, please upload files under 20MB.');
+      return;
+    }
+    selectedFile = file;
+    selectedFileName.textContent = `Selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+    selectedFileName.style.display = 'block';
+    dropZoneText.style.display = 'none';
+  }
+  
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drop-zone--active');
+  });
+  
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('drop-zone--active');
+  });
+  
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drop-zone--active');
+    if (e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+  
+  // Submit simplification request
+  submitBtn.addEventListener('click', async () => {
+    const textVal = pasteText.value.trim();
+    if (!selectedFile && !textVal) {
+      alert('Please upload a medical letter document or paste the medical letter text.');
+      return;
+    }
+    
+    // Switch to loading state
+    uploadContainer.style.display = 'none';
+    loadingContainer.style.display = 'flex';
+    
+    // Prepare API request
+    const formData = new FormData();
+    if (selectedFile) formData.append('file', selectedFile);
+    if (textVal) formData.append('text', textVal);
+    
+    activeAbortController = new AbortController();
+    streamedText = "";
+    streamContent.innerHTML = "";
+    
+    const backendUrl = 'http://localhost:5000/api/simplify/stream';
+      
+    try {
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        body: formData,
+        signal: activeAbortController.signal
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      loadingContainer.style.display = 'none';
+      resultContainer.style.display = 'flex';
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // save incomplete line to buffer
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') {
+              activeAbortController = null;
+            } else if (data.startsWith('[ERROR]')) {
+              showErrorText(data.replace('[ERROR]', ''));
+            } else {
+              // Standard chunk data
+              streamedText += data;
+              streamContent.innerHTML = formatMarkdown(streamedText);
+              // Auto scroll to bottom during streaming
+              streamContent.scrollTop = streamContent.scrollHeight;
+            }
+          }
+        }
+      }
+      
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('API stream simplification aborted by the user.');
+      } else {
+        console.error('API Error:', err);
+        loadingContainer.style.display = 'none';
+        resultContainer.style.display = 'flex';
+        showErrorText('We experienced an error connecting to the translation engine. Please make sure the backend server is running and try again.');
+      }
+    }
+  });
+  
+  function showErrorText(errMessage) {
+    streamContent.innerHTML = `
+      <div style="padding:1.5rem; background:rgba(239,68,68,0.06); border:0.5px solid rgba(239,68,68,0.2); border-radius:12px; text-align:center;">
+        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">⚠️</span>
+        <h4 style="color:#ef4444; font-family:var(--serif); font-size:1.1rem; margin-bottom:0.4rem;">Translation Unsuccessful</h4>
+        <p style="font-size:0.82rem; color:rgba(240,237,230,0.65); line-height:1.65;">${errMessage}</p>
+        <button id="error-retry-btn" class="modal-btn modal-btn-primary" style="margin-top:1rem; padding:0.5rem 1.4rem; font-size:0.78rem;">Try Again</button>
+      </div>
+    `;
+    const retryBtn = document.getElementById('error-retry-btn');
+    if (retryBtn) retryBtn.addEventListener('click', resetForm);
+  }
+  
+  // Print functionality
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Luma Healthcare Clarity Report</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1e293b; padding: 2rem; max-width: 800px; margin: 0 auto; }
+              h2 { font-size: 1.6rem; color: #0f172a; margin-top: 2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+              h3 { font-size: 1.25rem; color: #334155; margin-top: 1.5rem; }
+              ul { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+              li { margin-bottom: 0.5rem; }
+              p { margin-bottom: 1.5rem; }
+              .header { text-align: center; border-bottom: 3px double #cbd5e1; padding-bottom: 1.5rem; margin-bottom: 2rem; }
+              .header-logo { font-size: 2.2rem; font-weight: bold; letter-spacing: 0.05em; color: #2563eb; }
+              .header-tagline { font-style: italic; color: #64748b; font-size: 0.9rem; margin-top: 0.3rem; }
+              .disclaimer { font-size: 0.78rem; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 3rem; }
+              strong { color: #1e40af; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="header-logo">Luma</div>
+              <div class="header-tagline">Healthcare clarity designed for human emotion.</div>
+            </div>
+            ${streamContent.innerHTML}
+            <div class="disclaimer">
+              This report was generated using Luma AI. It is an interpretation assistant to help you prepare for conversations with your physician, and does not replace professional medical advice.
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      // Wait for resources to load if any, then print
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    });
+  }
+  
+  // Custom Markdown parser
+  function formatMarkdown(text) {
+    // Escape HTML to prevent XSS
+    let escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+      
+    // Headings
+    escaped = escaped.replace(/^#\s+(.+)$/gm, '<h2 class="stream-h2">$1</h2>');
+    escaped = escaped.replace(/^##\s+(.+)$/gm, '<h3 class="stream-h3">$1</h3>');
+    
+    // Bold
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Bullet Lists: match '- ' lines
+    // Match line-by-line first
+    escaped = escaped.replace(/^\s*-\s+(.+)$/gm, '<li class="stream-li">$1</li>');
+    
+    // Wrap groups of consecutive <li> tags in a <ul> tag
+    escaped = escaped.replace(/(<li class="stream-li">[\s\S]*?<\/li>)/g, (match) => {
+      return `<ul class="stream-ul">${match}</ul>`;
+    });
+    // Remove duplicate back-to-back <ul> tags
+    escaped = escaped.replace(/<\/ul>\s*<ul class="stream-ul">/g, '');
+    
+    // Double newlines to paragraphs
+    escaped = escaped.replace(/\n\n/g, '</p><p>');
+    
+    // Single newlines to linebreaks
+    escaped = '<p>' + escaped.replace(/\n/g, '<br>') + '</p>';
+    
+    // Clean up empty tags and invalid wraps
+    escaped = escaped.replace(/<p><\/p>/g, '');
+    escaped = escaped.replace(/<p><h2/g, '<h2');
+    escaped = escaped.replace(/<\/h2><\/p>/g, '</h2>');
+    escaped = escaped.replace(/<p><h3/g, '<h3');
+    escaped = escaped.replace(/<\/h3><\/p>/g, '</h3>');
+    escaped = escaped.replace(/<p><ul/g, '<ul');
+    escaped = escaped.replace(/<\/ul><\/p>/g, '</ul>');
+    
+    return escaped;
+  }
+})();
 </script>
 </body>
 </html>
