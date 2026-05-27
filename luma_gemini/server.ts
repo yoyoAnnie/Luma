@@ -95,8 +95,7 @@ app.post("/api/transform", async (req, res) => {
     const ai = getAiClient();
     
     if (!ai) {
-      // Return beautiful smart mock response when API key is missing to maintain perfect interactive experience
-      return res.json(getFallbackResponse(text || "", fileData?.name || "", selectedMode));
+      return res.status(400).json({ error: "GEMINI_API_KEY is not configured on the server. Please add it to your .env file." });
     }
 
     const promptText = `
@@ -194,87 +193,11 @@ app.post("/api/transform", async (req, res) => {
 
   } catch (error: any) {
     console.error("Gemini transformation error:", error);
-    // If rate limited or error occurs, fall back to safe simulated responses so user experience remains flawless
-    res.json(getFallbackResponse(text || "", fileData?.name || "", selectedMode));
+    res.status(500).json({ error: error.message || "Gemini transformation failed. Please verify your API key and connection." });
   }
 });
 
-// A robust local parser that generates incredibly smart, custom, contextual and elegant fallback responses
-// so that even if the API Key isn't fully configured yet, the prototype feels elite and fully immersive.
-function getFallbackResponse(text: string, fileName: string, mode: string) {
-  const contentUpper = ((text || "") + " " + (fileName || "")).toUpperCase();
-  
-  let disease = "your current reading";
-  let scaryTerm = "Infiltration / Edema";
-  let simplified = "fluid build-up and mild tissue response";
-  
-  if (contentUpper.includes("ECG") || contentUpper.includes("HEART") || contentUpper.includes("MYOCARDIAL") || contentUpper.includes("CARDIO")) {
-    disease = "heart scan / ECG results";
-    scaryTerm = "Tachycardia or Myocardial strain";
-    simplified = "your heart beating slightly faster than usual, often associated with caffeine, fatigue, or stress";
-  } else if (contentUpper.includes("FRACTURE") || contentUpper.includes("BONE") || contentUpper.includes("X-RAY") || contentUpper.includes("RADIUS")) {
-    disease = "x-ray results";
-    scaryTerm = "Hairline fracture or Cortical disruption";
-    simplified = "a tiny, small crack in the outer layer of the bone that knows exactly how to heal itself back stronger";
-  } else if (contentUpper.includes("BLOOD") || contentUpper.includes("LIPID") || contentUpper.includes("CHOLESTEROL") || contentUpper.includes("HDL") || contentUpper.includes("LDL")) {
-    disease = "blood chemistry report";
-    scaryTerm = "Hyperlipidemia or Elevated biomarkers";
-    simplified = "elevated cholesterol layers, which can be elegantly navigated through gentle, delicious, life-giving foods";
-  } else if (contentUpper.includes("GLUCOSE") || contentUpper.includes("A1C") || contentUpper.includes("DIABETES") || contentUpper.includes("GLYCEMIC") || contentUpper.includes("HEMOGLOBIN")) {
-    disease = "glycemic / A1c glucose report";
-    scaryTerm = "Borderline hyper-glycemic index";
-    simplified = "your average blood sugar levels, showing that your energy storage systems are fully functional and in balance";
-  } else if (contentUpper.includes("PHARYNGITIS") || contentUpper.includes("TONSIL") || contentUpper.includes("THROAT") || contentUpper.includes("STREP")) {
-    disease = "throat swabs / diagnostic letters";
-    scaryTerm = "Acute Pharyngitis with Erythema";
-    simplified = "a normal, standard sore throat with minor warmth and redness that represents your cells mounting a heroic defense";
-  }
 
-  const output: any = {
-    stabilizingReassurance: "Take an intentional, deep breath in... and let it go. You are safe. Your body is incredibly resilient and is working hard right now to restore balance. This report sounds complex because it is written for machines, not sensitive human hearts. Let's make it simple.",
-    simplifiedExplanation: `This ${disease} points to what clinicians call ${scaryTerm}. In pure human words, this represents ${simplified}. Think of it like your body's alarm system gently ringing to request a little extra tenderness and hydration, rather than anything broken beyond repair.`,
-    urgencyLevel: 3,
-    urgencyAnalysis: "This is a yellow-green light of comfort. There is absolute time to rest tonight. There is no call for emergency run. Let's schedule a peaceful doctor discussion tomorrow or later this week.",
-    primaryFocusAction: "Drink a warm cup of herbal tea and rest your beautiful mind tonight without looking up symptoms online.",
-    keyActions: [
-      "Keep yourself gently hydrated with structured electrolyte fluids or warm water.",
-      "Engage your body in standard, restful sleep of at least 8 hours tonight.",
-      "Draft a peaceful note to send to your doctor online to schedule a check-in."
-    ],
-    jargonMappings: [
-      {
-        scaryTerm: scaryTerm,
-        gentleTranslation: simplified,
-        description: "Doctors use clinical terms to communicate exact biological locations, but to your body, it just means it is mounting a standard response to recover."
-      },
-      {
-        scaryTerm: "Acute / Bilateral",
-        gentleTranslation: "Recent or active on both left and right sides",
-        description: "Used to describe standard physical symmetry in reports, not the severity of the illness."
-      }
-    ],
-    questionsToAskDoctor: [
-      "What are the simple daily steps I can take to help my body heal naturally?",
-      "Are there any hydration or dietary elements that can ease this feeling?",
-      "When would be a realistic timeline for my tissue or cells to fully recover?"
-    ]
-  };
-
-  if (mode === "burnout") {
-    output.stabilizingReassurance = "You are depleted, and that's okay. Let's look at just the absolute essentials. Nothing extra. Take a breath.";
-    output.simplifiedExplanation = `Your body is simply calling for restorative rest. The clinical jargon basically means ${simplified}.`;
-    output.urgencyLevel = 2;
-    output.urgencyAnalysis = "Completely safe to rest right now. Your only job is recovery.";
-    output.primaryFocusAction = "Close your screens, put on comfortable clothing, and rest. The rest can wait.";
-    output.keyActions = ["Power down your digital devices.", "Rest cleanly."];
-    output.questionsToAskDoctor = ["How can we simplify this treatment schedule?"];
-  } else if (mode === "learner") {
-    output.stabilizingReassurance = "Let's translate scientific precision into beautiful biological wisdom. Understanding how your body works is the ultimate stepping stone to feeling absolute empowerment.";
-    output.preventativeScience = "At a cellular level, your body initiates a wonderful cascade when dealing with this stressor. White blood cells travel along your vascular highways, expanding vessels to allow oxygen to rush to the tissues. Crucial growth factors are secreted local to the area. This represents a beautifully coordinated dance that your immune system has practiced for millions of years of human evolution.";
-  }
-
-  return output;
-}
 
 // Vite integration
 async function startServer() {

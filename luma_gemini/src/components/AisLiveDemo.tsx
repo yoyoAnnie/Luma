@@ -10,18 +10,11 @@ import {
 } from "lucide-react";
 import { UiMode, TransformationResponse } from "../types";
 
-const MOCK_TEXT_FRACTURE = "CRITICAL EXAM FINDINGS: Planar x-ray of the distal left upper extremity demonstrates minimal, non-displaced focal cortical discontinuity along the distomedial radius shaft, consistent with an acute hairline fracture. Diffuse peri-skeletal edema and microvascular trauma surrounding distal joint spaces. Splatting/dislocation absent.";
 
-const MOCK_TEXT_STREP = "CLINICAL STATUS SUMMARY: Diagnostic swab positive for Streptococcus pyogenes colonization. Marked bilateral palatopharyngeal erythema accompanied by severe follicular tonsillar exudate. Moderate anterior cervical lymphadenopathy noted at Level Ila bilateral with reactive follicular hyperplasia.";
-
-const MOCK_TEXT_LIPID = "LAB PROFILE: Fasting lipid panel reveals severe, out-of-bounds hypercholesterolemia. Elevated Atherogenic risk index calculated at 5.9. Serum of Low-density lipoprotein (LDL) cholesterol flagged extreme elevation at 192 mg/dL. Intima-media thickening suspected. Recommending aggressive HMG-CoA reductase inhibitor pathway.";
-
-const MOCK_TEXT_GLUCOSE = "CLINICAL PATIENT REPORT: ARUP LABORATORIES. Hemoglobin A1c measured at 5.4% (Reference Interval <= 5.6%). Estimated Average Glucose calculated at 108 mg/dL. Interpretive findings suggest standard glycemic control; no indications of hyperglycemia or diabetic symptoms at present.";
 
 export default function AisLiveDemo() {
   const [inputText, setInputText] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<{ data: string; mimeType: string; name: string } | null>(null);
-  const [genericToggle, setGenericToggle] = useState<number>(0);
   const [selectedMode, setSelectedMode] = useState<UiMode>("panic");
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [fileScanned, setFileScanned] = useState<boolean>(false);
@@ -133,36 +126,8 @@ export default function AisLiveDemo() {
     };
     reader.readAsDataURL(file);
 
-    const fileName = file.name.toLowerCase();
-    const isGeneric = fileName.includes("image") || fileName.includes("screenshot") || fileName.includes("unnamed") || fileName.length <= 12;
-
-    let targetText = MOCK_TEXT_STREP;
-    if (isGeneric) {
-      if (genericToggle === 0) {
-        targetText = MOCK_TEXT_GLUCOSE;
-        setGenericToggle(1);
-      } else if (genericToggle === 1) {
-        targetText = MOCK_TEXT_LIPID;
-        setGenericToggle(2);
-      } else if (genericToggle === 2) {
-        targetText = MOCK_TEXT_FRACTURE;
-        setGenericToggle(0);
-      }
-    } else {
-      // Map files intelligently to presets for local simulated experience
-      // Evaluate more specific cardio/lipid checks first, then fall back to report/patient checks for glucose/A1c
-      targetText = fileName.includes("blood") || fileName.includes("lipid") || fileName.includes("cholesterol") || fileName.includes("ayumetrix") || fileName.includes("cardio") || fileName.includes("health")
-        ? MOCK_TEXT_LIPID
-        : fileName.includes("hba1c") || fileName.includes("glucose") || fileName.includes("arup") || fileName.includes("glycemic") || fileName.includes("patient") || fileName.includes("report") || fileName.includes("final") || fileName.includes("hemoglobin")
-        ? MOCK_TEXT_GLUCOSE
-        : fileName.includes("bone") || fileName.includes("fracture") || (fileName.includes("x-ray") || fileName.includes("xray"))
-        ? MOCK_TEXT_FRACTURE
-        : MOCK_TEXT_STREP;
-    }
-
     setTimeout(() => {
-      setScanStatus(`${file.name} parsed successfully.`);
-      setInputText(targetText);
+      setScanStatus(`${file.name} uploaded successfully.`);
       setCurrentStep(0);
       setResult(null);
     }, 1200);
