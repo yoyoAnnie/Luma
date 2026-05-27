@@ -197,7 +197,7 @@ Please format your response in clear, beautiful Markdown with the following two 
 
 # Plain-English Explanation
 - Break down and translate medical jargon, anatomical terms, diagnostic labels, and abbreviations.
-- Explain the key medical findings, what they mean, and what the next steps are in simple terms.
+- Explain the key medical findings, what they mean, and whatx the next steps are in simple terms.
 - Use formatting (bullet points, bold text, paragraphs) to make it highly readable.
 - Maintain a warm, encouraging, clear, and professional tone. Avoid generating panic.
 
@@ -219,9 +219,12 @@ Please format your response in clear, beautiful Markdown with the following two 
   });
 
   for await (const chunk of response) {
-    const chunkText = chunk.text;
-    if (chunkText) {
-      yield chunkText;
+    {
+      const chunkText = chunk.text ?? chunk.candidates?.[0]?.content?.parts?.[0]?.text;
+      console.log('[geminiService] chunk received:', !!chunkText);
+      if (chunkText) {
+        yield chunkText;
+      }
     }
   }
 }

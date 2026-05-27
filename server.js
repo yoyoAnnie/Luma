@@ -101,7 +101,9 @@ app.post('/api/simplify/stream', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
+    res.write(': connected\n\n'); // keep-alive comment, frontend ignores this
 
     // Track whether the client has disconnected
     let clientDisconnected = false;
@@ -115,7 +117,8 @@ app.post('/api/simplify/stream', (req, res) => {
 
       for await (const chunk of stream) {
         if (clientDisconnected) break;
-        res.write(`data: ${chunk}\n\n`);
+        const encoded = chunk.replace(/\n/g, '\\n');
+        res.write(`data: ${encoded}\n\n`);
       }
 
       if (!clientDisconnected) {
