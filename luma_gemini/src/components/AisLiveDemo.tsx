@@ -91,9 +91,9 @@ export default function AisLiveDemo() {
       setCurrentStep(4);
 
     } catch (err: any) {
-      console.warn("API Error. Falling back to empathetic local generator.", err);
-      // Falling back securely
-      setError("Could not call Gemini. Revering to beautiful simulated wellness output.");
+      console.warn("API Error:", err);
+      setCurrentStep(0);
+      setError(err?.message || "Transformation failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -217,7 +217,6 @@ export default function AisLiveDemo() {
         // Dynamic layout mapping based on UI Mode
         const isPanic = selectedMode === "panic";
         const isBurnout = selectedMode === "burnout";
-        const isLearner = selectedMode === "learner";
 
         return (
           <div className={`space-y-6 animate-fade-in ${isPanic ? "max-w-xl mx-auto py-4" : ""}`}>
@@ -398,20 +397,6 @@ export default function AisLiveDemo() {
                   </ul>
                 </div>
 
-                {/* PREVENTATIVE SCIENCE LAYER (Learner mode only!) */}
-                {isLearner && result.preventativeScience && (
-                  <div className="p-6 rounded-3xl bg-gradient-to-tr from-[#1E1B4B]/30 to-[#0F172A]/40 border border-sky-500/20 md:col-span-2 space-y-3">
-                    <div className="flex items-center gap-2 text-indigo-400">
-                      <BookOpen className="w-4 h-4" />
-                      <span className="font-mono text-xs uppercase tracking-widest font-semibold">
-                        Biology of Recovery (Preventative Medical Science)
-                      </span>
-                    </div>
-                    <p className="text-sm text-sky-200/90 leading-relaxed font-sans">
-                      {result.preventativeScience}
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
@@ -458,19 +443,6 @@ export default function AisLiveDemo() {
             Panic Mode
           </button>
           
-          <button
-            id="selector_mode_learner"
-            onClick={() => setSelectedMode("learner")}
-            className={`px-4 py-2 rounded-xl text-xs uppercase tracking-wider font-mono transition-all duration-300 flex items-center gap-1.5 ${
-              selectedMode === "learner"
-                ? "bg-luma-glow/15 text-luma-glow border border-luma-glow/20 shadow-md"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full bg-luma-glow ${selectedMode === "learner" ? "animate-pulse" : ""}`} />
-            Curious Learner
-          </button>
-
           <button
             id="selector_mode_burnout"
             onClick={() => setSelectedMode("burnout")}

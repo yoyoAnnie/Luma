@@ -21,7 +21,7 @@ export interface TransformationResponse {
   preventativeScience?: string;
 }
 
-export type UiMode = 'panic' | 'learner' | 'burnout';
+export type UiMode = 'panic' | 'burnout';
 
 export interface PresetCase {
   id: string;

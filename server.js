@@ -82,17 +82,12 @@ app.post('/api/simplify', (req, res) => {
         let userId = req.body.user_id || 'anonymous';
         let userEmail = null;
         const token = req.headers.authorization?.split(' ')[1];
-        console.log('[server] Token present:', !!token);
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-        console.log('[server] Auth error:', authError);
-        console.log('[server] Auth user:', user?.id);
+        const { data: { user } } = await supabase.auth.getUser(token);
         if (user) {
           userId = user.id;
           userEmail = user.email;
         }
-        console.log('[server] Auth header present:', !!req.headers.authorization);
-        console.log('[server] Resolved user_id:', userId);
-        const { data: insertData, error: dbError } = await supabase
+        const { error: dbError } = await supabase
           .from('uploads')
           .insert({
             user_id: userId,
@@ -103,8 +98,6 @@ app.post('/api/simplify', (req, res) => {
           });
         if (dbError) {
           console.error('[server] Supabase insert error:', JSON.stringify(dbError));
-        } else {
-          console.log('[server] Supabase insert success, user_id:', userId);
         }
       })();
     }
@@ -184,8 +177,6 @@ app.post('/api/simplify/stream', (req, res) => {
               });
             if (dbError) {
               console.error('[server] Supabase insert error:', JSON.stringify(dbError));
-            } else {
-              console.log('[server] Supabase insert success, user_id:', userId);
             }
           })();
         }

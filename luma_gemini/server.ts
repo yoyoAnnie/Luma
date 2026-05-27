@@ -43,42 +43,37 @@ app.post("/api/transform", async (req, res) => {
 
   const selectedMode = mode || "panic"; // panic | learner | burnout
 
-  // System instruction tailored for high emotional intelligence and the specific UI Mode
-  let systemInstructions = `
-    You are LUMA, an extremely empathetic, warm, and comforting medical interpretation AI.
-    Your absolute core goal is to stand as a soothing, emotionally supportive shield between an anxious patient and overwhelming medical jargon.
-    
-    You do NOT sound clinical, cold, or sterile.
-    You design clarity out of panic.
-    
-    Keep explanations deeply human, reassuring, and highly accurate but phrased with profound tenderness.
-  `;
+  // Each mode gets its own complete system instruction — no shared emotional base that bleeds across modes
+  let systemInstructions: string = "";
 
   if (selectedMode === "panic") {
-    systemInstructions += `
-      The user is currently in PANIC MODE. They are terrified and cognitively overloaded.
-      - Keep sentences short and incredibly soothing.
-      - Start with an immediate, deep emotional stabilization sentence.
-      - Do NOT over-explain complex biochemical pathways.
-      - Keep next steps highly linear, gentle, and slow.
-      - Your tone should feel like a slow, deep breath.
+    systemInstructions = `
+      You are LUMA in PANIC MODE. The user is frightened and cognitively overloaded. Emotional safety is your only priority.
+
+      TONE: Speak like a calm, trusted friend holding their hand. Slow sentences. Warm. Never clinical.
+
+      RULES:
+      - stabilizingReassurance: Long and deeply comforting. Use "we" ("we will get through this together"). Validate their fear before anything medical. No medical terms here.
+      - simplifiedExplanation: Zero numbers, zero statistics, zero technical terms. Use gentle everyday metaphors only ("your body is just asking for a little extra rest right now"). Frame everything as temporary and manageable.
+      - urgencyAnalysis: Purely reassuring. If urgency is low, say so clearly and warmly. Never alarming.
+      - keyActions: Maximum 3 steps. Each must be immediately doable and soft (e.g. "drink a glass of water", "sit somewhere quiet"). Nothing complex.
+      - jargonMappings: Translate every term to the warmest possible everyday phrase. No technical definitions.
+      - questionsToAskDoctor: Gentle conversation starters, not demands.
+      - preventativeScience: Leave completely empty — do not fill this in.
     `;
   } else if (selectedMode === "burnout") {
-    systemInstructions += `
-      The user is currently in BURNOUT MODE. They are emotionally and mentally exhausted, perhaps from dealing with chronic illness or endless doctor calls.
-      - Focus ONLY on the single absolute most important action.
-      - Minimize text volume. Make the summary ultra-concise.
-      - Exclude excess scientific context.
-      - Reassure them that it is okay to rest and take things one tiny step at a time.
-    `;
-  } else {
-    // learner
-    systemInstructions += `
-      The user is currently in CURIOUS LEARNER MODE. They are ready to empower themselves with biology.
-      - Expand your breakdown to explain the biological 'why' in a fascinating, clear, and reassuring way.
-      - Describe the body's natural defense mechanism or how the treatment works.
-      - Maintain standard soothing empathy but inspire clinical curiosity.
-      - Provide a section detailing the 'preventativeScience' aspect of this topic.
+    systemInstructions = `
+      You are LUMA in BURNOUT MODE. The user is mentally exhausted from chronic illness or endless medical appointments.
+
+      TONE: Ultra-minimal. Compassionate but brief. Every word must earn its place.
+
+      RULES:
+      - Focus ONLY on the single most important action. One thing. That is all.
+      - simplifiedExplanation: Three sentences maximum. Plain language.
+      - keyActions: One action only.
+      - Cut all scientific context, history, and detail.
+      - Reassure them it is okay to rest and take things one tiny step at a time.
+      - preventativeScience: Leave completely empty.
     `;
   }
 
@@ -99,92 +94,90 @@ app.post("/api/transform", async (req, res) => {
     }
 
     const promptText = `
-      Analyze the following scary doctor's note or medical report:
+      Analyze the following medical report:
       ---
       ${text || "See attached document image."}
       ---
-      
+
       Provide your analysis conforming strictly to the requested JSON layout.
     `;
 
+    const responseSchema = {
+      type: Type.OBJECT,
+      properties: {
+        stabilizingReassurance: {
+          type: Type.STRING,
+          description: "Opening message to the user. Tone and length vary by mode: long and emotional in panic mode, one factual sentence in learner mode."
+        },
+        simplifiedExplanation: {
+          type: Type.STRING,
+          description: "Explanation of the condition. In panic mode: gentle metaphors only, no numbers. In learner mode: full biological/physiological mechanism with accurate terminology."
+        },
+        urgencyLevel: {
+          type: Type.INTEGER,
+          description: "Urgency on a scale of 1 to 10. 1 = routine. 10 = urgent clinical attention required."
+        },
+        urgencyAnalysis: {
+          type: Type.STRING,
+          description: "Context for the urgency level. In panic mode: warm and reassuring. In learner mode: evidence-based clinical prognosis."
+        },
+        primaryFocusAction: {
+          type: Type.STRING,
+          description: "The single most important action the user should take."
+        },
+        keyActions: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+          description: "Next steps. In panic mode: max 3 gentle actions. In learner mode: 4–6 evidence-based interventions each with clinical mechanism or study citation."
+        },
+        jargonMappings: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              scaryTerm: { type: Type.STRING, description: "The medical term from the text." },
+              gentleTranslation: { type: Type.STRING, description: "Plain-English equivalent." },
+              description: { type: Type.STRING, description: "In panic mode: reassuring plain explanation. In learner mode: accurate clinical definition with etymology." }
+            },
+            required: ["scaryTerm", "gentleTranslation", "description"]
+          },
+          description: "Medical terminology mapped to plain language."
+        },
+        questionsToAskDoctor: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+          description: "Questions for the next clinical visit. In panic mode: gentle starters. In learner mode: specific clinical questions about biomarkers, genetics, monitoring, and treatment."
+        },
+        preventativeScience: {
+          type: Type.STRING,
+          description: "Learner mode only — leave empty for other modes. Covers risk factors, condition history, evidence-based prevention, and epidemiology."
+        }
+      },
+      required: [
+        "stabilizingReassurance",
+        "simplifiedExplanation",
+        "urgencyLevel",
+        "urgencyAnalysis",
+        "primaryFocusAction",
+        "keyActions",
+        "jargonMappings",
+        "questionsToAskDoctor"
+      ]
+    };
+
     const parts: any[] = [{ text: promptText }];
     if (fileData && fileData.data && fileData.mimeType) {
-      parts.push({
-        inlineData: {
-          data: fileData.data,
-          mimeType: fileData.mimeType
-        }
-      });
+      parts.push({ inlineData: { data: fileData.data, mimeType: fileData.mimeType } });
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: parts,
       config: {
         systemInstruction: systemInstructions,
+        temperature: 0.7,
         responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            stabilizingReassurance: {
-              type: Type.STRING,
-              description: "A very warm, beautiful, comforting opening statement designed to calm a panic attack or emotional overwhelm immediately."
-            },
-            simplifiedExplanation: {
-              type: Type.STRING,
-              description: "An elegant, crystal-clear explanation of what is going on, using simple metaphors. No scary words left untranslated."
-            },
-            urgencyLevel: {
-              type: Type.INTEGER,
-              description: "Visual urgency guidance on a scale of 1 to 10 (1 = absolute green light comfort, 10 = important to go to the clinic immediately but state it safely)."
-            },
-            urgencyAnalysis: {
-              type: Type.STRING,
-              description: "Empathetic context for the urgency level. Reassure them why this number is given."
-            },
-            primaryFocusAction: {
-              type: Type.STRING,
-              description: "The absolute, single most important action they should take. Be extremely gentle."
-            },
-            keyActions: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "A step-by-step, calming list of personalized next steps designed to feel manageable."
-            },
-            jargonMappings: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  scaryTerm: { type: Type.STRING, description: "The scary sounding Latin or medical word in the original text (e.g., 'Acute Pharyngitis', 'Erythema')." },
-                  gentleTranslation: { type: Type.STRING, description: "The beautiful, clear alternative human phrase (e.g., 'Sore throat', 'Mild redness')." },
-                  description: { type: Type.STRING, description: "A simple, reassuring description of why doctors use this word." }
-                },
-                required: ["scaryTerm", "gentleTranslation", "description"]
-              },
-              description: "A breakdown mapping intimidating medical jargon to gentle everyday terms."
-            },
-            questionsToAskDoctor: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "A list of comforting, smart questions they can copy-paste to ask their clinician at the next visit."
-            },
-            preventativeScience: {
-              type: Type.STRING,
-              description: "Only filled in for Leaner mode. An interesting, positive, biological explanation of how the healing process works or the medical science behind it."
-            }
-          },
-          required: [
-            "stabilizingReassurance",
-            "simplifiedExplanation",
-            "urgencyLevel",
-            "urgencyAnalysis",
-            "primaryFocusAction",
-            "keyActions",
-            "jargonMappings",
-            "questionsToAskDoctor"
-          ]
-        }
+        responseSchema
       }
     });
 
