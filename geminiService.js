@@ -19,7 +19,7 @@ export function prepareFileBlock(file) {
 
   try {
     const maxSize = parseInt(process.env.MAX_FILE_SIZE) || DEFAULT_MAX_SIZE;
-    
+
     if (file.size > maxSize) {
       console.warn(`[geminiService] File too large: ${file.originalname} (${file.size} bytes). Max limit is ${maxSize} bytes. Sending empty input.`);
       return null;
@@ -68,16 +68,16 @@ export async function simplifyMedicalLetter({ text, file }) {
   const fileBlock = prepareFileBlock(file);
 
   // Construct contents array for multimodal Gemini API call
-  const contents = [];
-  
+  // CORRECT — parts nested inside a user message
+  const parts = [];
   if (text && text.trim().length > 0) {
-    contents.push({ text: text.trim() });
+    parts.push({ text: text.trim() });
   }
-
   if (fileBlock) {
-    contents.push(fileBlock);
+    parts.push(fileBlock);
   }
 
+  const contents = [{ role: 'user', parts }];
   // If both are empty, we return an empty response
   if (contents.length === 0) {
     console.warn('[geminiService] Empty input: No valid text or file provided.');
@@ -133,8 +133,8 @@ Please format your response in clear, beautiful Markdown with the following two 
       }
     });
 
-    const simplifiedText = response.text || '';
-    
+    const simplifiedText = response.text ?? response.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+
     return {
       success: true,
       simplifiedText: simplifiedText,
@@ -150,5 +150,78 @@ Please format your response in clear, beautiful Markdown with the following two 
       simplifiedText: '',
       emptyInput: true
     };
+  }
+}
+
+/**
+ * Streaming version of simplifyMedicalLetter.
+ * Yields text chunks as they arrive from Gemini.
+ *
+ * @param {Object} params
+ * @param {string} [params.text] - Plain text entered by the user
+ * @param {Object} [params.file] - Multer file object (image or PDF)
+ * @yields {string} text chunks from the model
+ */
+export async function* simplifyMedicalLetterStream({ text, file }) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is not defined.');
+  }
+
+  // Reuse the same file-handling logic
+  const fileBlock = prepareFileBlock(file);
+
+  // Build parts array identically to simplifyMedicalLetter
+  const parts = [];
+  if (text && text.trim().length > 0) {
+    parts.push({ text: text.trim() });
+  }
+  if (fileBlock) {
+    parts.push(fileBlock);
+  }
+
+  if (parts.length === 0) {
+    throw new Error('Empty input: No text or valid file was provided.');
+  }
+
+  const contents = [{ role: 'user', parts }];
+
+  const ai = new GoogleGenAI({ apiKey });
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+  // Same system instruction used by the non-streaming function
+  const systemInstruction = `
+You are a compassionate, patient-focused medical translator. Your role is to simplify complex medical letters, lab results, clinical summaries, or doctor's notes into plain, everyday English.
+
+Please format your response in clear, beautiful Markdown with the following two distinct sections:
+
+# Plain-English Explanation
+- Break down and translate medical jargon, anatomical terms, diagnostic labels, and abbreviations.
+- Explain the key medical findings, what they mean, and what the next steps are in simple terms.
+- Use formatting (bullet points, bold text, paragraphs) to make it highly readable.
+- Maintain a warm, encouraging, clear, and professional tone. Avoid generating panic.
+
+# Questions to Ask Your Doctor
+- Provide a list of 3 to 5 clear, actionable, and personalized questions that the patient can take to their next appointment.
+- These questions should be written in the first person (e.g., "What does the swelling in my joint indicate?") so the patient can read them directly.
+- Group the questions logically if applicable.
+`.trim();
+
+  console.log(`[geminiService] Streaming from ${modelName} with ${parts.length} part(s)...`);
+
+  const response = await ai.models.generateContentStream({
+    model: modelName,
+    contents: contents,
+    config: {
+      systemInstruction: systemInstruction,
+      temperature: 0.2
+    }
+  });
+
+  for await (const chunk of response) {
+    const chunkText = chunk.text;
+    if (chunkText) {
+      yield chunkText;
+    }
   }
 }

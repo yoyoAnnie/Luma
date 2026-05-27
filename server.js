@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import { simplifyMedicalLetter } from './geminiService.js';
+import { simplifyMedicalLetter, simplifyMedicalLetterStream } from './geminiService.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS for frontend integration
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 
 // Parse JSON and URL-encoded request bodies
 app.use(express.json());
@@ -29,7 +29,8 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     geminiConfigured: !!process.env.GEMINI_API_KEY,
-    maxFileSizeLimit: MAX_FILE_SIZE
+    maxFileSizeLimit: MAX_FILE_SIZE,
+    streamingSupported: true
   });
 });
 
@@ -76,6 +77,58 @@ app.post('/api/simplify', (req, res) => {
     // Determine HTTP status code: Always return 200 to allow the client to handle
     // the output gracefully as requested, but flag errors inside the JSON response.
     res.json(result);
+  });
+});
+// Streaming Simplification Route (SSE)
+app.post('/api/simplify/stream', (req, res) => {
+  upload(req, res, async (err) => {
+    let file = req.file;
+
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        console.warn(`[server] Stream: file exceeded size limit of ${MAX_FILE_SIZE} bytes.`);
+      } else {
+        console.error('[server] Stream: multer error:', err);
+      }
+      file = null;
+    }
+
+    const text = req.body.text;
+
+    console.log(`[server] Received /api/simplify/stream request. Has text: ${!!text}, Has file: ${!!file}`);
+
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Track whether the client has disconnected
+    let clientDisconnected = false;
+    req.on('close', () => {
+      clientDisconnected = true;
+      console.log('[server] Stream: client disconnected.');
+    });
+
+    try {
+      const stream = simplifyMedicalLetterStream({ text, file });
+
+      for await (const chunk of stream) {
+        if (clientDisconnected) break;
+        res.write(`data: ${chunk}\n\n`);
+      }
+
+      if (!clientDisconnected) {
+        res.write('data: [DONE]\n\n');
+      }
+    } catch (streamErr) {
+      console.error('[server] Stream error:', streamErr);
+      if (!clientDisconnected) {
+        res.write(`data: [ERROR] ${streamErr.message}\n\n`);
+      }
+    } finally {
+      res.end();
+    }
   });
 });
 
