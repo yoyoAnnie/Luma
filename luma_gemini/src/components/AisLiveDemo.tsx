@@ -10,32 +10,13 @@ import {
 } from "lucide-react";
 import { UiMode, TransformationResponse } from "../types";
 
-const PRESET_CASES = [
-  {
-    id: "fracture",
-    title: "X-Ray Fracture Report",
-    category: "Trauma / Imaging",
-    shortDesc: "Initial skeletal inspection of forearm",
-    rawText: "CRITICAL EXAM FINDINGS: Planar x-ray of the distal left upper extremity demonstrates minimal, non-displaced focal cortical discontinuity along the distomedial radius shaft, consistent with an acute hairline fracture. Diffuse peri-skeletal edema and microvascular trauma surrounding distal joint spaces. Splatting/dislocation absent."
-  },
-  {
-    id: "strep",
-    title: "Throat swab & Blood work",
-    category: "Infection Care",
-    shortDesc: "Throat microbiology smear findings",
-    rawText: "CLINICAL STATUS SUMMARY: Diagnostic swab positive for Streptococcus pyogenes colonization. Marked bilateral palatopharyngeal erythema accompanied by severe follicular tonsillar exudate. Moderate anterior cervical lymphadenopathy noted at Level Ila bilateral with reactive follicular hyperplasia."
-  },
-  {
-    id: "cholesterol",
-    title: "Cardio Lipid Profile",
-    category: "Metabolic / Heart",
-    shortDesc: "Annual serum lipid panel indicators",
-    rawText: "LAB PROFILE: Fasting lipid panel reveals severe, out-of-bounds hypercholesterolemia. Elevated Atherogenic risk index calculated at 5.9. Serum of Low-density lipoprotein (LDL) cholesterol flagged extreme elevation at 192 mg/dL. Intima-media thickening suspected. Recommending aggressive HMG-CoA reductase inhibitor pathway."
-  }
-];
+const MOCK_TEXT_FRACTURE = "CRITICAL EXAM FINDINGS: Planar x-ray of the distal left upper extremity demonstrates minimal, non-displaced focal cortical discontinuity along the distomedial radius shaft, consistent with an acute hairline fracture. Diffuse peri-skeletal edema and microvascular trauma surrounding distal joint spaces. Splatting/dislocation absent.";
+
+const MOCK_TEXT_STREP = "CLINICAL STATUS SUMMARY: Diagnostic swab positive for Streptococcus pyogenes colonization. Marked bilateral palatopharyngeal erythema accompanied by severe follicular tonsillar exudate. Moderate anterior cervical lymphadenopathy noted at Level Ila bilateral with reactive follicular hyperplasia.";
+
+const MOCK_TEXT_LIPID = "LAB PROFILE: Fasting lipid panel reveals severe, out-of-bounds hypercholesterolemia. Elevated Atherogenic risk index calculated at 5.9. Serum of Low-density lipoprotein (LDL) cholesterol flagged extreme elevation at 192 mg/dL. Intima-media thickening suspected. Recommending aggressive HMG-CoA reductase inhibitor pathway.";
 
 export default function AisLiveDemo() {
-  const [activePreset, setActivePreset] = useState<string>("");
   const [inputText, setInputText] = useState<string>("");
   const [selectedMode, setSelectedMode] = useState<UiMode>("panic");
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -54,7 +35,7 @@ export default function AisLiveDemo() {
   const handleTransform = async (textToUse: string) => {
     const finalQuery = textToUse || inputText;
     if (!finalQuery.trim()) {
-      setError("Please input clinical text or double-click a preset first.");
+      setError("Please input clinical text or drop a file first.");
       return;
     }
     
@@ -100,16 +81,6 @@ export default function AisLiveDemo() {
     }
   };
 
-  const selectPreset = (pId: string) => {
-    const p = PRESET_CASES.find((item) => item.id === pId);
-    if (!p) return;
-    setActivePreset(pId);
-    setInputText(p.rawText);
-    setResult(null);
-    setCurrentStep(0);
-    setFileScanned(false);
-  };
-
   // Drag and drop events
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -139,17 +110,16 @@ export default function AisLiveDemo() {
   const simulateFileUpload = (fileName: string) => {
     setFileScanned(true);
     setScanStatus(`Scanning ${fileName}...`);
-    // Randomly map to strep or fracture presets for maximum realistic visual transformation
-    const targetPreset = fileName.toLowerCase().includes("blood") || fileName.toLowerCase().includes("lipid")
-      ? PRESET_CASES[2]
+    
+    const targetText = fileName.toLowerCase().includes("blood") || fileName.toLowerCase().includes("lipid")
+      ? MOCK_TEXT_LIPID
       : fileName.toLowerCase().includes("bone") || fileName.toLowerCase().includes("fracture") || fileName.toLowerCase().includes("x")
-      ? PRESET_CASES[0]
-      : PRESET_CASES[1]; // streptococcus throat infection standard
+      ? MOCK_TEXT_FRACTURE
+      : MOCK_TEXT_STREP;
 
     setTimeout(() => {
       setScanStatus(`${fileName} parsed successfully.`);
-      setInputText(targetPreset.rawText);
-      setActivePreset(targetPreset.id);
+      setInputText(targetText);
       setCurrentStep(0);
       setResult(null);
     }, 1200);
@@ -160,7 +130,6 @@ export default function AisLiveDemo() {
     setCurrentStep(0);
     setResult(null);
     setInputText("");
-    setActivePreset("");
     setFileScanned(false);
     setScanStatus("");
   };
@@ -504,39 +473,8 @@ export default function AisLiveDemo() {
                 Let Us Scan The Dreaded Letter
               </h3>
               <p className="text-xs text-gray-400 leading-relaxed mt-2">
-                Drag & drop dry clinic notes, double-click an interactive preset below, or paste intimidating physician logs directly.
+                Drag & drop dry clinic notes or paste intimidating physician logs directly.
               </p>
-            </div>
-
-            {/* Presets Grid Selector */}
-            <div className="space-y-2.5">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-[#B0B3C1]">
-                Scary Diagnosis Presets
-              </span>
-              <div className="grid grid-cols-1 gap-2.5">
-                {PRESET_CASES.map((p) => (
-                  <button
-                    key={p.id}
-                    id={`btn_preset_${p.id}`}
-                    onClick={() => selectPreset(p.id)}
-                    className={`text-left p-3.5 rounded-2xl border transition-all duration-300 relative overflow-hidden group ${
-                      activePreset === p.id
-                        ? "bg-gradient-to-tr from-luma-glow/15 to-luma-lavender/5 border-luma-glow/40 shadow-md"
-                        : "bg-white/2 border-white/5 hover:border-white/10 hover:bg-white/4"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-serif font-semibold text-white group-hover:text-luma-glow transition-colors">
-                        {p.title}
-                      </span>
-                      <span className="text-[9px] uppercase font-mono tracking-widest text-[#8F94AC]">
-                        {p.category}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-gray-400 line-clamp-1">{p.shortDesc}</p>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* File drag-and-drop zone with drag support */}

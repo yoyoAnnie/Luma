@@ -46,8 +46,7 @@ Coordinates the overall page sections, navigation, and core interactive states:
 
 ### 2. `AisLiveDemo.tsx` (AI Transformation Engine)
 The main workspace containing inputs and output structures for medical translation:
-*   **Presets Matrix**: Double-clicking X-Ray Fracture, Throat Swab, or Lipid profiles immediately pre-fills the input field.
-*   **Drag & Drop Scanner**: Accepts local files (PDF, PNG, JPG, or TXT), parsing them into clinical text templates (supports scanning simulation).
+*   **Drag & Drop Scanner**: Accepts local files (PDF, PNG, JPG, or TXT), parsing them into clinical text templates (supports scanning simulation with custom fallback mock texts).
 *   **Adaptive Psychological States**: Users toggle between three visual UI modes (`Panic Mode`, `Curious Learner`, and `Burnout Mode`) to filter response layout, density, and detail.
 *   **Transformation Stage Workflow**:
     1.  *Stage 1 (Clinical Jargon)*: Text is shown blurred, representing the overwhelming stress of looking at raw diagnostics.
