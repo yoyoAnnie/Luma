@@ -9,6 +9,7 @@ import {
   HelpCircle, ChevronRight, Activity, BookOpen, AlertTriangle
 } from "lucide-react";
 import { UiMode, TransformationResponse } from "../types";
+import { supabase } from "../supabase";
 
 
 
@@ -68,6 +69,22 @@ export default function AisLiveDemo() {
       
       setResult(data);
       setCurrentStep(3); // Stage 3: Breakdown visual cards appear
+
+      // Save translation success to history (fire-and-forget)
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await supabase.from("uploads").insert({
+            user_id: session.user.id,
+            user_email: session.user.email,
+            file_name: uploadedFile?.name || "Custom Text Search",
+            input_text: finalQuery.slice(0, 2000),
+            simplified_text: JSON.stringify(data)
+          });
+        }
+      } catch (historyErr) {
+        console.warn("Could not save to uploads history:", historyErr);
+      }
       
       // Short delay before stepping into final Stage 4: calming summary
       await new Promise((resolve) => setTimeout(resolve, 2000));

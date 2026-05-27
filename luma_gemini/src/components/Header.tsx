@@ -4,20 +4,32 @@
  */
 
 import React from "react";
-import { Sparkles, Heart, Sun, Moon } from "lucide-react";
+import { Sparkles, Heart, Sun, Moon, User, LogOut } from "lucide-react";
 
 interface HeaderProps {
   onDemoScroll: () => void;
   onBreatheScroll: () => void;
   isLightMode: boolean;
   setIsLightMode: (val: boolean) => void;
+  user: any;
+  profile: any;
+  onAuthClick: () => void;
+  onProfileClick: () => void;
+  onLogoClick: () => void;
+  onSignOut: () => void;
 }
 
 export default function Header({
   onDemoScroll,
   onBreatheScroll,
   isLightMode,
-  setIsLightMode
+  setIsLightMode,
+  user,
+  profile,
+  onAuthClick,
+  onProfileClick,
+  onLogoClick,
+  onSignOut
 }: HeaderProps) {
   return (
     <header
@@ -29,9 +41,14 @@ export default function Header({
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        
         {/* Logo and tag */}
-        <div id="company_logo_group" className="flex items-center gap-3">
-          <div className={`relative w-9 h-9 rounded-full bg-gradient-to-tr from-luma-glow to-luma-lavender flex items-center justify-center p-[1px] shadow-sm`}>
+        <div
+          id="company_logo_group"
+          className="flex items-center gap-3 cursor-pointer select-none group"
+          onClick={onLogoClick}
+        >
+          <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-luma-glow to-luma-lavender flex items-center justify-center p-[1px] shadow-sm transition-transform duration-300 group-hover:scale-105">
             <div className={`w-full h-full rounded-full flex items-center justify-center ${
               isLightMode ? "bg-slate-50" : "bg-midnight-deep"
             }`}>
@@ -58,7 +75,7 @@ export default function Header({
         }`}>
           <button
             onClick={onBreatheScroll}
-            className={`transition-colors duration-300 hover:text-indigo-600 ${
+            className={`transition-colors duration-300 hover:text-indigo-600 cursor-pointer ${
               isLightMode ? "text-slate-600" : "text-gray-400 hover:text-white"
             }`}
           >
@@ -66,7 +83,7 @@ export default function Header({
           </button>
           <button
             onClick={onDemoScroll}
-            className={`transition-colors duration-300 flex items-center gap-1.5 hover:text-indigo-600 ${
+            className={`transition-colors duration-300 flex items-center gap-1.5 hover:text-indigo-600 cursor-pointer ${
               isLightMode ? "text-slate-600" : "text-gray-400 hover:text-white"
             }`}
           >
@@ -74,8 +91,9 @@ export default function Header({
           </button>
         </nav>
 
-        {/* Live Active status indicator and Theme switcher */}
-        <div className="flex items-center gap-3">
+        {/* Action controls & Auth Profile */}
+        <div className="flex items-center gap-4">
+          
           {/* Theme switcher */}
           <button
             id="theme_mode_switch_btn"
@@ -105,18 +123,66 @@ export default function Header({
             Understand Your Note
           </button>
           
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
-            isLightMode
-              ? "bg-indigo-50/70 border-indigo-100"
-              : "bg-white/3 border-white/5"
-          }`}>
-            <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500/20 animate-pulse" />
-            <span className={`text-[10px] font-mono tracking-wider uppercase ${
-              isLightMode ? "text-indigo-900" : "text-gray-300"
-            }`}>
-              Taking a moment
-            </span>
+          {/* Auth / Profile Picture Placeholder */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <div className="flex items-center gap-3">
+                {/* Profile Avatar Trigger */}
+                <button
+                  id="header_profile_btn"
+                  onClick={onProfileClick}
+                  className={`relative w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-300 group ${
+                    isLightMode
+                      ? "bg-indigo-50 border-indigo-100 hover:bg-indigo-100"
+                      : "bg-white/5 border-white/10 hover:border-luma-glow/40"
+                  }`}
+                  title="View Profile Dashboard"
+                >
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      className="w-full h-full object-cover"
+                      alt="User avatar"
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center text-xs font-mono font-bold ${
+                      isLightMode ? "text-indigo-600" : "text-luma-glow"
+                    }`}>
+                      {profile?.full_name ? profile.full_name[0].toUpperCase() : user.email[0].toUpperCase()}
+                    </div>
+                  )}
+                </button>
+
+                {/* Sign Out Shortcut Icon */}
+                <button
+                  onClick={onSignOut}
+                  className={`p-2.5 rounded-full transition-all duration-300 border flex items-center justify-center cursor-pointer ${
+                    isLightMode
+                      ? "bg-red-50 border-red-100 text-red-600 hover:bg-red-100"
+                      : "bg-white/5 border-white/10 text-gray-400 hover:text-red-400 hover:border-red-400/30"
+                  }`}
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              // Blank avatar placeholder directing user to Login/SignUp
+              <button
+                id="header_login_placeholder_btn"
+                onClick={onAuthClick}
+                className={`relative w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 group ${
+                  isLightMode
+                    ? "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                    : "bg-white/2 border-white/5 hover:border-luma-glow/40 text-gray-500 hover:text-white"
+                }`}
+                title="Log In / Sign Up"
+              >
+                <User className="w-5 h-5" />
+              </button>
+            )}
           </div>
+
         </div>
       </div>
     </header>

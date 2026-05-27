@@ -13,6 +13,9 @@ import Footer from "./components/Footer";
 import CalmingParticles from "./components/CalmingParticles";
 import AudioWave from "./components/AudioWave";
 import AisLiveDemo from "./components/AisLiveDemo";
+import AuthModal from "./components/AuthModal";
+import ProfilePage from "./components/ProfilePage";
+import { supabase } from "./supabase";
 
 // Jargon transition list for the interactive scroll/reveal section
 interface JargonTransition {
@@ -47,6 +50,47 @@ export default function App() {
   const [isLightMode, setIsLightMode] = useState<boolean>(false);
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
   const [customJargonRevealed, setCustomJargonRevealed] = useState<{ [key: string]: boolean }>({});
+
+  // Auth and View states
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [currentView, setCurrentView] = useState<'home' | 'profile'>('home');
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user || null;
+      setUser(currentUser);
+      if (currentUser) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single();
+        setProfile(profileData || { id: currentUser.id, full_name: currentUser.email.split("@")[0], avatar_url: "" });
+      } else {
+        setProfile(null);
+        setCurrentView("home");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleRefreshProfile = async () => {
+    if (!user) return;
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    if (profileData) {
+      setProfile(profileData);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
   
   // Doctor conversation rehearsal simulator
   const [activeRehearsalIndex, setActiveRehearsalIndex] = useState<number>(0);
@@ -106,11 +150,34 @@ export default function App() {
 
       {/* Main Luxury Header */}
       <Header
-        onDemoScroll={() => scrollToRef(demoSectionRef)}
-        onBreatheScroll={() => scrollToRef(breatheSectionRef)}
+        onDemoScroll={() => {
+          setCurrentView("home");
+          setTimeout(() => scrollToRef(demoSectionRef), 100);
+        }}
+        onBreatheScroll={() => {
+          setCurrentView("home");
+          setTimeout(() => scrollToRef(breatheSectionRef), 100);
+        }}
         isLightMode={isLightMode}
         setIsLightMode={setIsLightMode}
+        user={user}
+        profile={profile}
+        onAuthClick={() => setIsAuthModalOpen(true)}
+        onProfileClick={() => setCurrentView("profile")}
+        onLogoClick={() => setCurrentView("home")}
+        onSignOut={handleSignOut}
       />
+
+      {currentView === "profile" ? (
+        <ProfilePage
+          user={user}
+          profile={profile}
+          onRefreshProfile={handleRefreshProfile}
+          onBackToHome={() => setCurrentView("home")}
+          isLightMode={isLightMode}
+        />
+      ) : (
+        <>
 
       {/* HERO SECTION - Cinematic interactive landing */}
       <section id="hero_section" className="relative min-h-[90vh] flex items-center justify-center pt-8 pb-16 px-6">
@@ -738,8 +805,19 @@ export default function App() {
         </div>
       </section>
 
+        </>
+      )}
+
       {/* Footer */}
       <Footer isLightMode={isLightMode} />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => setCurrentView("profile")}
+        isLightMode={isLightMode}
+      />
     </div>
   );
 }
