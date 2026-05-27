@@ -147,7 +147,7 @@ export default function App() {
                 onClick={() => scrollToRef(demoSectionRef)}
                 className="py-4 px-8 rounded-2xl bg-[#FCFAF6] hover:bg-white text-midnight font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 shadow-xl shadow-luma-glow/5 hover:scale-101 flex items-center justify-center gap-2 cursor-pointer btn-pulse"
               >
-                Experience Live Demo
+                Upload Medical Document
                 <ArrowRight className="w-4 h-4" />
               </button>
               

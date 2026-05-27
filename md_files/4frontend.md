@@ -34,6 +34,7 @@ luma_gemini/
 
 ### 1. `App.tsx` (Dashboard Controller)
 Coordinates the overall page sections, navigation, and core interactive states:
+*   **Hero Navigation Button**: An explicit `Upload Medical Document` action button replaces the original generic "Experience Live Demo" tag to guide users clearly to the transformation zone.
 *   **Dual-Theme Synchronization (`isLightMode`)**: Manages the application's visual mode state. A `useEffect` syncs this state to the document body's `.theme-light` class, enabling smooth, fluid background and text color transitions across all child components.
 *   **Kinetic Typography Stage**: Cycles through emotional words ("confused", "overwhelmed", "anxious", "scared") and smooth transitions into calming states ("clarity", "confidence", "empowered") to visually demonstrate Luma's value.
 *   **Dialogue Rehearsal Simulator**: An interactive dialogue engine enabling patients to rehearse assertive responses to common physician statements (e.g. cholesterol statin pathways, hairline fractures, or positive strep swabs) to ground cognitive threat loops before a clinical visit.
@@ -56,6 +57,7 @@ The main workspace containing inputs and output structures for medical translati
 
 ### 3. `AudioWave.tsx` (Nervous System Regulation)
 Provides a visual breathing guide:
+*   **Interactive Play/Pause Start Toggle (`isActive`)**: Requires the user to explicitly click "Start Breathing Exercise" (or the orb play button) before the countdown, visual concentrics, and breathing cycles begin. When paused, state colors and soundwave graphic bars remain static and non-threatening.
 *   Concentric circular paths scale up and down dynamically using smooth bezier intervals, prompting box breathing (Inhale, Hold, Exhale).
 *   **Breathing Tempo Selectors**:
     *   `Box Loop`: Balanced 4s cycle for general calming.
