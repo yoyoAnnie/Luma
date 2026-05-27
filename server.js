@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { simplifyMedicalLetter, simplifyMedicalLetterStream } from './geminiService.js';
+import supabase from './supabaseClient.js';
+import requireAuth from './requireAuth.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -74,6 +76,39 @@ app.post('/api/simplify', (req, res) => {
       }
     }
 
+    // Save successful simplification to Supabase (fire-and-forget — never blocks the response)
+    if (result.success && supabase) {
+      (async () => {
+        let userId = req.body.user_id || 'anonymous';
+        let userEmail = null;
+        const token = req.headers.authorization?.split(' ')[1];
+        console.log('[server] Token present:', !!token);
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        console.log('[server] Auth error:', authError);
+        console.log('[server] Auth user:', user?.id);
+        if (user) {
+          userId = user.id;
+          userEmail = user.email;
+        }
+        console.log('[server] Auth header present:', !!req.headers.authorization);
+        console.log('[server] Resolved user_id:', userId);
+        const { data: insertData, error: dbError } = await supabase
+          .from('uploads')
+          .insert({
+            user_id: userId,
+            user_email: userEmail,
+            file_name: file?.originalname || 'text-input',
+            input_text: (text || '').slice(0, 2000),
+            simplified_text: result.simplifiedText
+          });
+        if (dbError) {
+          console.error('[server] Supabase insert error:', JSON.stringify(dbError));
+        } else {
+          console.log('[server] Supabase insert success, user_id:', userId);
+        }
+      })();
+    }
+
     // Determine HTTP status code: Always return 200 to allow the client to handle
     // the output gracefully as requested, but flag errors inside the JSON response.
     res.json(result);
@@ -115,14 +150,45 @@ app.post('/api/simplify/stream', (req, res) => {
     try {
       const stream = simplifyMedicalLetterStream({ text, file });
 
+      let accumulatedText = '';
       for await (const chunk of stream) {
         if (clientDisconnected) break;
+        accumulatedText += chunk;
         const encoded = chunk.replace(/\n/g, '\\n');
         res.write(`data: ${encoded}\n\n`);
       }
 
       if (!clientDisconnected) {
         res.write('data: [DONE]\n\n');
+        // Save accumulated stream result to Supabase (fire-and-forget)
+        if (supabase && accumulatedText) {
+          const authHeader = req.headers.authorization;
+          (async () => {
+            let userId = req.body.user_id || 'anonymous';
+            let userEmail = null;
+            if (authHeader?.startsWith('Bearer ')) {
+              const { data: authData } = await supabase.auth.getUser(authHeader.slice(7));
+              if (authData?.user) {
+                userId = authData.user.id;
+                userEmail = authData.user.email;
+              }
+            }
+            const { data: insertData, error: dbError } = await supabase
+              .from('uploads')
+              .insert({
+                user_id: userId,
+                user_email: userEmail,
+                file_name: file?.originalname || 'text-input',
+                input_text: (text || '').slice(0, 2000),
+                simplified_text: accumulatedText
+              });
+            if (dbError) {
+              console.error('[server] Supabase insert error:', JSON.stringify(dbError));
+            } else {
+              console.log('[server] Supabase insert success, user_id:', userId);
+            }
+          })();
+        }
       }
     } catch (streamErr) {
       console.error('[server] Stream error:', streamErr);
@@ -133,6 +199,50 @@ app.post('/api/simplify/stream', (req, res) => {
       res.end();
     }
   });
+});
+
+// Auth Routes
+app.post('/api/auth/signup', async (req, res) => {
+  const { email, password } = req.body;
+  if (!supabase) return res.json({ success: false, error: 'Supabase is not configured.' });
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) return res.json({ success: false, error: error.message });
+  res.json({ success: true, user: data.user });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!supabase) return res.json({ success: false, error: 'Supabase is not configured.' });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return res.json({ success: false, error: error.message });
+  res.json({ success: true, user: data.user, session: data.session });
+});
+
+app.post('/api/auth/logout', async (req, res) => {
+  const { access_token } = req.body;
+  if (!supabase) return res.json({ success: false, error: 'Supabase is not configured.' });
+  const { error } = await supabase.auth.admin.signOut(access_token);
+  if (error) return res.json({ success: false, error: error.message });
+  res.json({ success: true });
+});
+
+// History Route
+app.get('/api/history', requireAuth, async (req, res) => {
+  const userId = req.user.id;
+  if (!supabase) {
+    return res.json({ success: false, error: 'Supabase is not configured.' });
+  }
+  const { data, error } = await supabase
+    .from('uploads')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error) {
+    console.error('[supabase] History query error:', error);
+    return res.json({ success: false, error: error.message });
+  }
+  res.json({ success: true, history: data });
 });
 
 // Global error handler
